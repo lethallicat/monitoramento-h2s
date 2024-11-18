@@ -9,66 +9,78 @@ const client = mqtt.connect(broker);
 let labels = []; // Horários
 let data = [];   // Valores de concentração
 
-// Configuração do gráfico
+// Array para armazenar os dados de medições
+let historicoMedicoes = [];
+const maxPontos = 50; // Define o máximo de pontos no gráfico
+
+// Configurações do gráfico
 const ctx = document.getElementById('grafico').getContext('2d');
 const chart = new Chart(ctx, {
     type: 'line',
     data: {
-        labels: labels,
+        labels: [],
         datasets: [{
             label: 'Concentração de H2S (ppm)',
-            data: data,
-            borderColor: 'rgba(75, 192, 192, 1)',
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            tension: 0.4,
+            data: [],
+            borderColor: 'teal',
+            borderWidth: 1,
+            fill: false,
+            pointRadius: 4,
+            pointBackgroundColor: 'teal',
         }]
     },
     options: {
-        scales: {
-            x: { title: { display: true, text: 'Horário' } },
-            y: { title: { display: true, text: 'Concentração (ppm)' } }
-        },
         responsive: true,
+        scales: {
+            x: {
+                title: {
+                    display: true,
+                    text: 'Horário'
+                }
+            },
+            y: {
+                title: {
+                    display: true,
+                    text: 'Concentração (ppm)'
+                },
+                beginAtZero: true
+            }
+        }
     }
 });
 
-// Conecta ao Broker
-client.on('connect', () => {
-    console.log("Conectado ao Broker MQTT!");
-    client.subscribe(topic, (err) => {
-        if (!err) {
-            console.log(`Inscrito no tópico: ${topic}`);
-        } else {
-            console.error("Erro ao se inscrever no tópico:", err);
-        }
-    });
+// Atualiza o gráfico com dados armazenados no array
+function atualizarGrafico() {
+    chart.data.labels = historicoMedicoes.map(item => item.horario);
+    chart.data.datasets[0].data = historicoMedicoes.map(item => item.concentracao);
+    chart.update();
+}
+
+// Configuração MQTT
+const client = mqtt.connect('wss://test.mosquitto.org:8081'); // Broker público
+
+client.on('connect', function () {
+    console.log('Conectado ao broker MQTT');
+    client.subscribe('topico_sensor_h2s_if24JF'); // Substituir pelo seu tópico
 });
 
-// Recebe dados do MQTT
-client.on('message', (topic, message) => {
-    const concentracao = message.toString();
-    const agora = new Date();
-    const horaAtual = agora.toLocaleTimeString();
+client.on('message', function (topic, message) {
+    // Recebe a medição do sensor
+    const concentracao = parseFloat(message.toString());
+    const horario = new Date().toLocaleTimeString(); // Horário atual
 
-    // Atualiza a exibição na página
-    document.getElementById('dados').textContent = `Concentração: ${concentracao} ppm`;
-    document.getElementById('hora').textContent = `Hora da última medição: ${horaAtual}`;
+    // Exibe na página
+    document.getElementById('dados').innerText = `Concentração: ${concentracao.toFixed(2)} ppm`;
+    document.getElementById('hora').innerText = `Hora da última medição: ${horario}`;
 
-    // Adiciona os dados no gráfico
-    labels.push(horaAtual);
-    data.push(parseFloat(concentracao));
+    // Armazena a medição no array
+    historicoMedicoes.push({ horario, concentracao });
 
-    // Limita o histórico no gráfico (ex: 10 últimas medições)
-    if (labels.length > 10) {
-        labels.shift();
-        data.shift();
+    // Limita o número de pontos no gráfico
+    if (historicoMedicoes.length > maxPontos) {
+        historicoMedicoes.shift(); // Remove o ponto mais antigo
     }
 
     // Atualiza o gráfico
-    chart.update();
-});
-
-// Tratamento de erros
-client.on('error', (err) => {
-    console.error("Erro de conexão:", err);
+    atualizarGrafico();
 });
