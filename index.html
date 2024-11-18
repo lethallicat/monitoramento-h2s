@@ -3,62 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medição H2S</title>
+    <title>Gráfico H2S</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f9f9f9;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            height: 100vh;
+            margin: 20px;
         }
-
-        #conteudo {
-            text-align: center;
-            max-width: 600px;
-            width: 100%;
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
         #dados {
             font-size: 24px;
             margin-top: 10px;
         }
-
         #hora {
             font-size: 18px;
             margin-bottom: 20px;
             color: #555;
         }
-
-		canvas {
-			max-width: 500px; /* Define a largura máxima */
-			max-height: 300px; /* Define a altura máxima */
-			width: 100%; /* Permite o ajuste dinâmico */
-			height: auto; /* Mantém a proporção */
-			margin: 0 auto; /* Centraliza o gráfico */
-			display: block;
-			border: 1px solid #ddd; /* Adiciona uma borda leve */
-			border-radius: 10px; /* Bordas arredondadas */
-			padding: 10px; /* Espaçamento interno */
-		}
+        #grafico-container {
+            max-width: 500px;
+            max-height: 300px;
+            width: 100%;
+            height: auto;
+            margin: 0 auto;
+            position: relative;
+            transition: all 0.3s ease-in-out; /* Transição suave */
+        }
+        #grafico-container.fullscreen {
+            max-width: 100%;
+            max-height: 100%;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1000; /* Certifique-se de que está acima de outros elementos */
+            background-color: white; /* Fundo branco ao expandir */
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
     </style>
 </head>
 <body>
-    <div id="conteudo">
-        <h1>Monitoramento de H2S</h1>
-        <div id="hora">Hora da última medição: --:--</div>
-        <div id="dados">Concentração: -- ppm</div>
+    <h1>Monitoramento de H2S</h1>
+    <div id="hora">Hora da última medição: --:--</div>
+    <div id="dados">Concentração: -- ppm</div>
+    <div id="grafico-container">
         <canvas id="grafico"></canvas>
     </div>
-    <script src="app.js"></script>
+    <script>
+        // Configurações do Broker MQTT
+        const broker = "wss://test.mosquitto.org:8081"; // Endereço do broker (WebSocket)
+        const topic = "topico_sensor_h2s_if24JF";      // Tópico do sensor de H2S
+
+        // Conecta ao broker MQTT
+        const client = mqtt.connect(broker);
+
+        // Dados para o gráfico
+        let labels = []; // Horários
+        let data = [];   // Valores de concentração
+
+        // Configuração do gráfico
+        const ctx = document.getElementById('grafico').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Concentração de H2S (ppm)',
+                    data: data,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.4,
+                }]
+            },
+            options: {
+                scales: {
+                    x: { title: { display: true, text: 'Horário' } },
+                    y: { title: { display: true, text: 'Concentração (ppm)' } }
+                },
+                responsive: true,
+            }
+        });
+
+        // Conecta ao Broker
+        client.on('connect', () => {
+            console.log("Conectado ao Broker MQTT!");
+            client.subscribe(topic, (err) => {
+                if (!err) {
+                    console.log(`Inscrito no tópico: ${topic}`);
+                } else {
+                    console.error("Erro ao se inscrever no tópico:", err);
+                }
+            });
+        });
+
+        // Recebe dados do MQTT
+        client.on('message', (receivedTopic, message) => {
+            if (receivedTopic === topic) {
+                const concentracao = message.toString();
+                const agora = new Date();
+                const horaAtual = agora.toLocaleTimeString();
+
+                // Atualiza a exibição na página
+                document.getElementById('dados').textContent = `Concentração: ${concentracao} ppm`;
+                document.getElementById('hora').textContent = `Hora da última medição: ${horaAtual}`;
+
+                // Adiciona os dados no gráfico
+                labels.push(horaAtual);
+                data.push(parseFloat(concentracao));
+
+                // Limita o histórico no gráfico (exemplo: 10 últimas medições)
+                if (labels.length > 10) {
+                    labels.shift();
+                    data.shift();
+                }
+
+                // Atualiza o gráfico
+                chart.update();
+            }
+        });
+
+        // Tratamento de erros
+        client.on('error', (err) => {
+            console.error("Erro de conexão:", err);
+        });
+
+        // Lógica para expandir e reduzir o gráfico ao clicar
+        const graficoContainer = document.getElementById('grafico-container');
+        graficoContainer.addEventListener('click', () => {
+            graficoContainer.classList.toggle('fullscreen'); // Adiciona ou remove a classe 'fullscreen'
+        });
+    </script>
 </body>
 </html>
