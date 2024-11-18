@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medição H2S</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+        }
+
+        #conteudo {
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #dados {
+            font-size: 24px;
+            margin-top: 10px;
+        }
+
+        #hora {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+		canvas {
+			max-width: 500px; /* Define a largura máxima */
+			max-height: 300px; /* Define a altura máxima */
+			width: 100%; /* Permite o ajuste dinâmico */
+			height: auto; /* Mantém a proporção */
+			margin: 0 auto; /* Centraliza o gráfico */
+			display: block;
+			border: 1px solid #ddd; /* Adiciona uma borda leve */
+			border-radius: 10px; /* Bordas arredondadas */
+			padding: 10px; /* Espaçamento interno */
+		}
+    </style>
+</head>
+<body>
+    <div id="conteudo">
+        <h1>Monitoramento de H2S</h1>
+        <div id="hora">Hora da última medição: --:--</div>
+        <div id="dados">Concentração: -- ppm</div>
+        <canvas id="grafico"></canvas>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
