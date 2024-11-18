@@ -71,8 +71,8 @@ client.on('message', (receivedTopic, message) => {
         labels.push(horaAtual);
         data.push(parseFloat(concentracao));
 
-        // Limita o histórico no gráfico (exemplo: 10 últimas medições)
-        if (labels.length > 10) {
+        // Limita o histórico no gráfico (exemplo: 25 últimas medições)
+        if (labels.length > 25) {
             labels.shift();
             data.shift();
         }
