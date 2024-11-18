@@ -5,10 +5,6 @@ const topic = "topico_sensor_h2s_if24JF";      // Tópico do sensor de H2S
 // Conecta ao broker MQTT
 const client = mqtt.connect(broker);
 
-// Dados para o gráfico
-let labels = []; // Horários
-let data = [];   // Valores de concentração
-
 // Array para armazenar os dados de medições
 let historicoMedicoes = [];
 const maxPontos = 50; // Define o máximo de pontos no gráfico
@@ -18,10 +14,10 @@ const ctx = document.getElementById('grafico').getContext('2d');
 const chart = new Chart(ctx, {
     type: 'line',
     data: {
-        labels: [],
+        labels: [], // Horários das medições
         datasets: [{
             label: 'Concentração de H2S (ppm)',
-            data: [],
+            data: [], // Valores das medições
             borderColor: 'teal',
             borderWidth: 1,
             fill: false,
@@ -49,38 +45,38 @@ const chart = new Chart(ctx, {
     }
 });
 
-// Atualiza o gráfico com dados armazenados no array
+// Atualiza o gráfico com os dados armazenados
 function atualizarGrafico() {
-    chart.data.labels = historicoMedicoes.map(item => item.horario);
-    chart.data.datasets[0].data = historicoMedicoes.map(item => item.concentracao);
+    chart.data.labels = historicoMedicoes.map(item => item.horario); // Horários
+    chart.data.datasets[0].data = historicoMedicoes.map(item => item.concentracao); // Concentrações
     chart.update();
 }
 
-// Configuração MQTT
-const client = mqtt.connect('wss://test.mosquitto.org:8081'); // Broker público
-
+// Conexão com o broker MQTT
 client.on('connect', function () {
     console.log('Conectado ao broker MQTT');
-    client.subscribe('topico_sensor_h2s_if24JF'); // Substituir pelo seu tópico
+    client.subscribe(topic); // Substitua pelo seu tópico correto
 });
 
-client.on('message', function (topic, message) {
-    // Recebe a medição do sensor
-    const concentracao = parseFloat(message.toString());
-    const horario = new Date().toLocaleTimeString(); // Horário atual
+client.on('message', function (receivedTopic, message) {
+    if (receivedTopic === topic) {
+        // Processa a mensagem recebida
+        const concentracao = parseFloat(message.toString());
+        const horario = new Date().toLocaleTimeString(); // Horário atual
 
-    // Exibe na página
-    document.getElementById('dados').innerText = `Concentração: ${concentracao.toFixed(2)} ppm`;
-    document.getElementById('hora').innerText = `Hora da última medição: ${horario}`;
+        // Atualiza os dados na página
+        document.getElementById('dados').innerText = `Concentração: ${concentracao.toFixed(2)} ppm`;
+        document.getElementById('hora').innerText = `Hora da última medição: ${horario}`;
 
-    // Armazena a medição no array
-    historicoMedicoes.push({ horario, concentracao });
+        // Adiciona a medição ao histórico
+        historicoMedicoes.push({ horario, concentracao });
 
-    // Limita o número de pontos no gráfico
-    if (historicoMedicoes.length > maxPontos) {
-        historicoMedicoes.shift(); // Remove o ponto mais antigo
+        // Remove pontos mais antigos se exceder o limite
+        if (historicoMedicoes.length > maxPontos) {
+            historicoMedicoes.shift();
+        }
+
+        // Atualiza o gráfico
+        atualizarGrafico();
     }
-
-    // Atualiza o gráfico
-    atualizarGrafico();
 });
