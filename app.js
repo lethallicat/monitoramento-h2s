@@ -1,6 +1,6 @@
 // Configurações do Broker MQTT
 const broker = "wss://test.mosquitto.org:8081"; // Endereço do broker (WebSocket)
-const topic = "topico_sensor_h2s_if24JF";      // Tópico do sensor de H2S
+const topic = "topico_sensor_h2s_if25JF";      // Tópico do sensor de H2S
 
 // Conecta ao broker MQTT
 const client = mqtt.connect(broker);
