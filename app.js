@@ -1,8 +1,17 @@
-// Configurações do Broker MQTT
-const broker = "wss://test.mosquitto.org:8081"; // Endereço do broker (WebSocket)
-const topic = "topico_h2s_if25JF";      // Tópico do sensor de H2S
+// Configurações dos Brokers MQTT
+const brokers = [
+	"wss://test.mosquitto.org:8081", // Mosquitto (WebSocket)
+	"wss://broker.hivemq.com:8000/mqtt" // HiveMQ (WebSocket)
+];
+const topic = "topico_h2s_if25JF"; // Tópico do sensor de H2S
+
+// Determina qual broker usar
+let brokerIndex = localStorage.getItem("brokerIndex") || 0;
+brokerIndex = parseInt(brokerIndex, 10) % brokers.length;
+const broker = brokers[brokerIndex];
 
 // Conecta ao broker MQTT
+console.log(`Tentando conectar ao Broker: ${broker}`);
 const client = mqtt.connect(broker);
 
 // Dados para o gráfico
@@ -34,7 +43,7 @@ const chart = new Chart(ctx, {
 
 // Conecta ao Broker
 client.on('connect', () => {
-	console.log("Conectado ao Broker MQTT!");
+	console.log(`Conectado ao Broker MQTT: ${broker}`);
 	client.subscribe(topic, (err) => {
 		if (!err) {
 			console.log(`Inscrito no tópico: ${topic}`);
@@ -73,6 +82,14 @@ client.on('message', (receivedTopic, message) => {
 // Tratamento de erros
 client.on('error', (err) => {
 	console.error("Erro de conexão:", err);
+
+	// Tenta mudar para o próximo broker
+	brokerIndex = (brokerIndex + 1) % brokers.length;
+	localStorage.setItem("brokerIndex", brokerIndex);
+
+	// Força o reload da página para tentar conectar ao próximo broker
+	alert(`Erro ao conectar ao broker: ${broker}. Tentando próximo broker...`);
+	location.reload();
 });
 
 // Lógica para expandir e reduzir o gráfico ao clicar
