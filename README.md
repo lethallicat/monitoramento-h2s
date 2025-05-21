@@ -110,7 +110,7 @@ O servidor HTTP estará acessível em http://<IP_DO_ESP>/metrics para coleta via
 
 Conecte os dispositivos conforme o esquema de fiação.
 
-Compile e envie o código para o ESP32.
+Compile e envie o código para o ESP32. Para facilitar, utilize PlatformIO.ini disponibilizado fazendo os ajustes necessários.
 
 Monitore as leituras via Serial Monitor.
 
