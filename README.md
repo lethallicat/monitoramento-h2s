@@ -122,6 +122,8 @@ Envie os dados para um servidor local (ex.: Prometheus) ou na núvem (ex.: googl
 
 Configure Prometheus para coletar as métricas HTTP.
 
+Caso queira, utilize o app.js e o index.html para criar uma página com gráfico em tempo real do sensor, utilizando as ferramentas disponíveis do Github.
+
 🔜 Roadmap
 
 Criar um website para visualizar os dados em tempo real e histórico.
