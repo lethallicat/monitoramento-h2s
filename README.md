@@ -2,7 +2,7 @@ Monitoramento de H2S com ESP32
 
 Introdução
 
-Este projeto utiliza um ESP32 para monitorar a concentração de H2S (Sulfeto de Hidrogênio) e enviar os dados para serviços MQTT, Firebase e um servidor HTTP. O sistema também exibe a leitura no display OLED e permite a coleta dos dados via Prometheus.
+Este projeto utiliza um ESP32 para monitorar a concentração de H2S (Sulfeto de Hidrogênio).
 
 📑 Table of Contents
 
