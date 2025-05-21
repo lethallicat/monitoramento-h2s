@@ -1,0 +1,21 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'h2s_sensor'
+    static_configs:
+      - targets: ['0.0.0.0'] #Atualize o endereço do ESP32
+
+remote_write:
+- url: (coloque aqui a url necessária obtida no grafana, caso queira ver o dashboard online)
+  basic_auth:
+    username: (username obtido do grafana)
+    password: (obtido do grafana)
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['localhost:9093']
+
+rule_files:
+  - 'alert_rules.yml' # Arquivo com regras de alerta
