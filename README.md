@@ -28,7 +28,7 @@ Conexão com Wi-Fi e recuperação automática em caso de falha.
 
 Publicação dos dados em dois brokers MQTT (Mosquitto e HiveMQ).
 
-Armazenamento das leituras no Firebase Realtime Database.
+Opcional - Armazenamento das leituras no Firebase Realtime Database.
 
 Exibição da concentração no display OLED.
 
@@ -44,9 +44,11 @@ ESP32
 
 Sensor de H2S (compatível com comunicação UART)
 
-Display OLED SSD1306
+Opcional - Display OLED SSD1306
 
-Ambiente de desenvolvimento Arduino IDE ou PlatformIO
+Ambiente de desenvolvimento Arduino IDE
+
+Opcional - PlatformIO, se utilizar VSCode
 
 Bibliotecas necessárias:
 
@@ -68,7 +70,7 @@ WiFiUdp.h
 
 WebServer.h
 
-Firebase_ESP_Client.h
+Firebase_ESP_Client.h //opcional
 
 ⚙️ Configuração
 
@@ -98,7 +100,7 @@ O sensor fará a leitura da concentração de H2S.
 
 Os dados serão publicados nos brokers MQTT configurados.
 
-As medições serão armazenadas no Firebase.
+As medições serão armazenadas no Firebase. (opcional)
 
 O display OLED exibirá a última leitura.
 
@@ -114,12 +116,15 @@ Monitore as leituras via Serial Monitor.
 
 Utilize um cliente MQTT para visualizar os dados publicados.
 
-Acesse o Firebase para verificar os registros armazenados.
+Acesse o Firebase para verificar os registros armazenados. (opcional)
+
+Envie os dados para um servidor local (ex.: Prometheus) ou na núvem (ex.: google cloud, aws...).
 
 Configure Prometheus para coletar as métricas HTTP.
 
 🔜 Roadmap
 
+Criar um website para visualizar os dados em tempo real e histórico.
 
 
 🤝 Contribuição
